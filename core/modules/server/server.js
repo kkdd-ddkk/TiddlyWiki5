@@ -68,17 +68,27 @@ function Server(options) {
 		self.addRoute(routeDefinition);
 	});
 	// Initialise the http vs https
-	this.listenOptions = null;
+	this.listenOptions = {};
 	this.protocol = "http";
 	var tlsKeyFilepath = this.get("tls-key"),
 		tlsCertFilepath = this.get("tls-cert");
 	if(tlsCertFilepath && tlsKeyFilepath) {
-		this.listenOptions = {
-			key: fs.readFileSync(path.resolve(this.boot.wikiPath,tlsKeyFilepath),"utf8"),
-			cert: fs.readFileSync(path.resolve(this.boot.wikiPath,tlsCertFilepath),"utf8")
-		};
+		this.listenOptions["key"] = fs.readFileSync(path.resolve(this.boot.wikiPath,tlsKeyFilepath),"utf8");
+		this.listenOptions["cert"] = fs.readFileSync(path.resolve(this.boot.wikiPath,tlsCertFilepath),"utf8");
 		this.protocol = "https";
 	}
+
+	var tlsCaCertFilepath = this.get("ca-cert");
+	if(tlsCaCertFilepath) {
+		this.listenOptions["requestCert"] = true;
+		this.listenOptions["rejectUnauthorized"] = true;
+		this.listenOptions["ca"] = fs.readFileSync(path.resolve(this.boot.wikiPath,tlsCaCertFilepath),"utf8");
+		this.protocol = "https";
+	}
+
+
+
+
 	this.transport = require(this.protocol);
 }
 
